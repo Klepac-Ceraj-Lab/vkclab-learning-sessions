@@ -43,7 +43,7 @@ _run this code (only once!) to install the dependencies._
 #| code-summary: "Show dependency codeblock"
 #| echo: true
 options(repos = c(CRAN = "https://cloud.r-project.org"))
-packages <- c("pls", "ggplot2", "gridExtra")
+packages <- c("pls", "ggplot2", "gridExtra", "dplyr")
 to_install <- packages[!packages %in% installed.packages()[,"Package"]]
 if(length(to_install)) install.packages(to_install)
 invisible(lapply(packages, function(pkg) {
