@@ -1,0 +1,60 @@
+---
+title: "Lab Learning Sessions"
+---
+
+# Welcome
+
+Welcome to our **Lab Learning Sessions** website!
+
+This is a series of interactive tutorials, designed to help us:
+- Review core statistical and machine learning methods,
+- Practice reproducible analysis in R/Julia/Python,
+- Build shared conceptual and technical skills as a team.
+
+Each session is built as a **Quarto notebook**, mixing:
+
+- 📖 *Concepts & equations*
+- 💻 *Live code examples*
+- 📊 *Visualizations*
+- 🗣️ *Discussion prompts*
+
+---
+
+# How to Use
+
+- Navigate through the **Sessions** tab in the menu.
+- Code is **folded by default** – click *Code* to expand and run interactively.
+- All datasets are toy examples, designed to run quickly.
+
+::: callout-tip
+Clone the repository and run `quarto preview` locally if you want to experiment with the code.
+:::
+
+---
+
+# Sessions Overview
+
+Here’s the roadmap for our first set of sessions:
+
+1. **[Session 1: PCA, PCR, and PLS](sessions/01-pca-pcr-pls.qmd)**
+   Dimensionality reduction, supervised vs unsupervised components.
+
+(More topics to come, shaped by lab interest!)
+
+---
+
+# Contributing
+
+- Want to lead a session?
+  Fork the repo and add a new `.qmd` in `sessions/`.
+
+- Got an idea for a topic?
+  Add it to our shared list or bring it up at lab meeting.
+
+---
+
+# Credits
+
+This series is maintained by **[The Klepac-Ceraj Lab @ Wellesley College](https://www.vkclab.com/)**.
+Structure and curation by **[Guilherme Fahur Bottino, Ph.D.](https://www.wellesley.edu/people?directory=biological-sciences&page=5)**
+It’s powered by [Quarto](https://quarto.org/), and all content is open for adaptation and improvement.
