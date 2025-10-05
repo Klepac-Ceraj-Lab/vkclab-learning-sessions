@@ -1,6 +1,6 @@
 ---
 title: "Learning Session 1: PCA, PCR, and PLS"
-authors: "Aeka Tomita 'XX, Gahan Sabbir 'XX, Guilherme Fahur Bottino"
+authors: "Aeka Tomita '26, Gahan Sabbir 'XX, Guilherme Fahur Bottino"
 format:
   html:
     toc: true
