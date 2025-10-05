@@ -1,5 +1,19 @@
 [
   {
+    "objectID": "sessions/01-pca-pcr-pls.html",
+    "href": "sessions/01-pca-pcr-pls.html",
+    "title": "Learning Session 1: PCA, PCR, and PLS",
+    "section": "",
+    "text": "This is the first session of our Lab Learning Sessions series.\nWe’ll explore three related but different approaches:\n\nPCA (Principal Component Analysis)\nPCR (Principal Component Regression)\nPLS (Partial Least Squares)\n\nAll methods use the same data matrix, but optimize different goals.\n\n\n\nUnderstand the objectives and math of PCA, PCR, and PLS.\n\nRun each method on a toy dataset.\n\nVisualize and compare results."
+  },
+  {
+    "objectID": "sessions/01-pca-pcr-pls.html#learning-outcomes",
+    "href": "sessions/01-pca-pcr-pls.html#learning-outcomes",
+    "title": "Learning Session 1: PCA, PCR, and PLS",
+    "section": "",
+    "text": "Understand the objectives and math of PCA, PCR, and PLS.\n\nRun each method on a toy dataset.\n\nVisualize and compare results."
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Lab Learning Sessions",
@@ -12,61 +26,5 @@
     "title": "About",
     "section": "",
     "text": "About this site"
-  },
-  {
-    "objectID": "sessions/01-pca-pcr-pls.html",
-    "href": "sessions/01-pca-pcr-pls.html",
-    "title": "Learning Session 1: PCA, PCR, and PLS",
-    "section": "",
-    "text": "This is the first session of our Lab Learning Sessions series.\nWe’ll explore three related but different approaches:\n\nPCA (Principal Component Analysis)\nPCR (Principal Component Regression)\nPLS (Partial Least Squares)\n\nAll methods use the same data matrix, but optimize different goals.\n\n\n\nUnderstand the objectives and math of PCA, PCR, and PLS.\n\nRun each method on a toy dataset.\n\nVisualize and compare results."
-  },
-  {
-    "objectID": "sessions/01-pca-pcr-pls.html#equations",
-    "href": "sessions/01-pca-pcr-pls.html#equations",
-    "title": "Learning Session 1: PCA, PCR, and PLS",
-    "section": "5.1 Equations",
-    "text": "5.1 Equations\n\nCovariance matrix:\n\\[\nS = \\frac{1}{n-1} X^\\top X\n\\]\nEigen decomposition:\n\\[\nS v_k = \\lambda_k v_k\n\\]\nPrincipal component scores:\n\\[\nt_k = X v_k\n\\]"
-  },
-  {
-    "objectID": "sessions/01-pca-pcr-pls.html#r-code",
-    "href": "sessions/01-pca-pcr-pls.html#r-code",
-    "title": "Learning Session 1: PCA, PCR, and PLS",
-    "section": "5.2 R Code",
-    "text": "5.2 R Code\n\n\nCode\npca_res &lt;- prcomp(X, scale. = TRUE)\nsummary(pca_res)\n\n\nImportance of components:\n                          PC1    PC2     PC3     PC4\nStandard deviation     1.7802 0.8300 0.34094 0.16080\nProportion of Variance 0.7923 0.1722 0.02906 0.00646\nCumulative Proportion  0.7923 0.9645 0.99354 1.00000\n\n\n\n\nCode\npca_loadings &lt;- data.frame(pca_res$rotation[,1:2], var = rownames(pca_res$rotation))\nlibrary(ggplot2)\np1 &lt;- ggplot(pca_loadings, aes(x = PC1, y = PC2, label = var)) +\n  geom_point() + geom_text(vjust = -0.5) +\n  ggtitle(\"PCA Loadings (X only)\")\np1"
-  },
-  {
-    "objectID": "sessions/01-pca-pcr-pls.html#equation",
-    "href": "sessions/01-pca-pcr-pls.html#equation",
-    "title": "Learning Session 1: PCA, PCR, and PLS",
-    "section": "6.1 Equation",
-    "text": "6.1 Equation\n\nRegression model: \\[\ny = T \\beta + \\varepsilon, \\quad T = X V_K\n\\]"
-  },
-  {
-    "objectID": "sessions/01-pca-pcr-pls.html#r-code-1",
-    "href": "sessions/01-pca-pcr-pls.html#r-code-1",
-    "title": "Learning Session 1: PCA, PCR, and PLS",
-    "section": "6.2 R Code",
-    "text": "6.2 R Code\n\n\nCode\nlibrary(pls)\n# pcr_model &lt;- pcr(y ~ X1+X2+X3+X4, data = dat, scale = TRUE, validation = \"LOO\")\n# summary(pcr_model)"
-  },
-  {
-    "objectID": "sessions/01-pca-pcr-pls.html#equation-1",
-    "href": "sessions/01-pca-pcr-pls.html#equation-1",
-    "title": "Learning Session 1: PCA, PCR, and PLS",
-    "section": "7.1 Equation",
-    "text": "7.1 Equation\n\nFind weights \\(w_1\\) that maximize: \\[\n\\max_{w} \\; \\text{Cov}(Xw, y)^2 \\quad \\text{s.t. } \\|w\\|=1\n\\]\nLatent variable: \\[\nt_1 = X w_1\n\\]"
-  },
-  {
-    "objectID": "sessions/01-pca-pcr-pls.html#r-code-2",
-    "href": "sessions/01-pca-pcr-pls.html#r-code-2",
-    "title": "Learning Session 1: PCA, PCR, and PLS",
-    "section": "7.2 R Code",
-    "text": "7.2 R Code\n\n\nCode\n# pls_model &lt;- plsr(y ~ X1+X2+X3+X4, data = dat, scale = TRUE, validation = \"LOO\")\n# summary(pls_model)\n\n# pls_loadings &lt;- data.frame(pls_model$loading.weights[,1:2], var = rownames(pls_model$loading.weights))\n# colnames(pls_loadings) &lt;- c(\"LV1\", \"LV2\", \"var\")\n\n# p2 &lt;- ggplot(pls_loadings, aes(x = LV1, y = LV2, label = var)) +\n#   geom_point(color = \"red\") + geom_text(vjust = -0.5) +\n#   ggtitle(\"PLS Loading Weights (X vs y)\")\n# p2"
-  },
-  {
-    "objectID": "sessions/01-pca-pcr-pls.html#learning-outcomes",
-    "href": "sessions/01-pca-pcr-pls.html#learning-outcomes",
-    "title": "Learning Session 1: PCA, PCR, and PLS",
-    "section": "",
-    "text": "Understand the objectives and math of PCA, PCR, and PLS.\n\nRun each method on a toy dataset.\n\nVisualize and compare results."
   }
 ]
