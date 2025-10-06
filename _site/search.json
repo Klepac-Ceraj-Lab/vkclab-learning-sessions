@@ -12,5 +12,19 @@
     "title": "Learning Session 1: PCA, PCR, and PLS",
     "section": "",
     "text": "Understand the objectives and math of PCA, PCR, and PLS.\n\nRun each method on a toy dataset.\n\nVisualize and compare results."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Lab Learning Sessions",
+    "section": "",
+    "text": "Welcome\nWelcome to our Lab Learning Sessions website!\nThis is a series of interactive tutorials, designed to help us: - Review core statistical and machine learning methods, - Practice reproducible analysis in R/Julia/Python, - Build shared conceptual and technical skills as a team.\nEach session is built as a Quarto notebook, mixing:\n\n📖 Concepts & equations\n💻 Live code examples\n📊 Visualizations\n🗣️ Discussion prompts\n\n\n\n\nHow to Use\n\nNavigate through the Sessions tab in the menu.\nCode is folded by default – click Code to expand and run interactively.\nAll datasets are toy examples, designed to run quickly.\n\n\n\n\n\n\n\nTip\n\n\n\nClone the repository and run quarto preview locally if you want to experiment with the code.\n\n\n\n\n\nSessions Overview\nHere’s the roadmap for our first set of sessions:\n\nSession 1: PCA, PCR, and PLS Dimensionality reduction, supervised vs unsupervised components.\n\n(More topics to come, shaped by lab interest!)\n\n\n\nContributing\n\nWant to lead a session? Fork the repo and add a new .qmd in sessions/.\nGot an idea for a topic? Add it to our shared list or bring it up at lab meeting.\n\n\n\n\nCredits\nThis series is maintained by The Klepac-Ceraj Lab @ Wellesley College. Structure and curation by Guilherme Fahur Bottino, Ph.D. It’s powered by Quarto, and all content is open for adaptation and improvement."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site"
   }
 ]

@@ -1,6 +1,6 @@
 ---
 title: "Learning Session 1: PCA, PCR, and PLS"
-authors: "Aeka Tomita '26, Gahan Sabbir 'XX, Guilherme Fahur Bottino"
+authors: "Aeka Tomita '26, Gahan Sabbir '28, Guilherme Fahur Bottino"
 format:
   html:
     toc: true
@@ -35,7 +35,7 @@ All methods use the same data matrix, but optimize different goals.
 # Preparing the environment
 
 This notebook depends on a few R packages for plotting and linear algebra operations.
-THe packages should have been installed during the initial rendering, but if not, 
+The packages should have been installed during the initial rendering, but if not, 
 _run this code (only once!) to install the dependencies._
 
 ```{r}
@@ -77,7 +77,7 @@ Columns:
 
 # Data
 
-First, let's assemble tha original data, as it would be utilized as a starting point:
+First, let's assemble the original data, as it would be utilized as a starting point:
 ```{r}
 #| code-fold: false
 dat <- data.frame(
@@ -106,18 +106,112 @@ y <- dat[, "AnemiaRiskScore"]
 
 # Principal Component Analysis (PCA)
 
-Wishlist:
+PCA is a dimensionality reduction technique. It takes several correlated measurements (our four “X” columns) and rewrites them as a few new, uncorrelated “principal components” that capture most of the variation in the data.
 
-1. Small intro with or withut equations (use LaTeX-type notations)
-2. Methods to compute the Principal components
-3. SVD decomposition of the X matrix (remember to mean-center and scale)
-4. Explanation of each term in the SVD decomposition
-5. Scree plot with the varexpl by each prin. comp. (cumulative)
-6. Explanation of Loadings (Vt) and scatterplot Loadings of every variable on PC1 and PC2
-7. Explanation of Scores (U) and scatterplot of samples on PC1 vs PC2 _colored by the response (y)_
-8. Compare the original matrix by the reconstruction created by using 1, 2, 3 and 4 pr. comps.
+First, we must scale our input variables so that different units and spread of data are normalized: 
+
+```{r}
+X_scaled <- scale(X)  
+
+```
+Then perform PCA on these scaled variables: 
+```{r}
+pca_result <- prcomp(X_scaled) 
+```
+
+We can see the result of the PCA has an atrribute, **rotation**. These are the loadings, which represent the weights of each original variable in the linear comination that forms a principal component. 
+
+```{r}
+loadings = pca_result$rotation
+print(loadings) 
+
+scores <- as.data.frame(pca_result$x)
+scores$y <- y
+```
+
+To visualize how much the total variance in the dataset is explained by each principal component, we can construct a **Scree** plot:
+```{r}
+var_explained <- pca_result$sdev^2 / sum(pca_result$sdev^2)
+
+pca_df <- data.frame(
+  PC = paste0("PC", 1:length(var_explained)),
+  Variance = var_explained
+)
+
+ggplot(pca_df, aes(x = PC, y = Variance, group = 1)) +
+  geom_line(color = "blue", linewidth = 1) +
+  geom_point(size = 3, color = "red") +
+  geom_text(aes(label = paste0(round(Variance * 100, 1), "%")),
+            vjust = -0.8, size = 4) +
+  labs(
+    title = "Scree Plot: Variance Explained by Each Principal Component",
+    x = "Principal Component",
+    y = "Proportion of Variance Explained"
+  ) +
+  theme_minimal(base_size = 14)
+
+```
+
+We can construct a **loadings** plot in order to visualize the relationship between the input variables. Each point in the plot represents one of the original features, and its position indicates how strongly it contributes to the first two principal components. Variables that are close together have similar patterns across samples, while those that point in opposite directions are negatively correlated. 
+
+```{r}
+#| fig-width: 11
+#| fig-height: 9
+
+# Extract the first two principal component loadings
+loadings <- as.data.frame(pca_result$rotation[, 1:2])
+loadings$Variable <- rownames(pca_result$rotation)
+
+ggplot(loadings, aes(x = PC1, y = PC2, label = Variable)) +
+  geom_point(size = 4, color = "red") +
+  geom_text(vjust = -1.2, size = 5) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
+  labs(
+    title = "PCA Loadings Plot",
+    x = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "% variance)"),
+    y = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "% variance)")
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+In our dataset, the Shannon and Inverse Simpson indices cluster together, suggesting they capture similar information about microbiome diversity. 
+
+
+
+The **scores** plot shows the PCA scores for each participant, where each point represents one pediatric participant’s profile based on their microbiome diversity and iron-related measurements. The color scale indicates the Anemia Risk Score, with warmer colors corresponding to higher risk. 
+
+```{r}
+ggplot(scores, aes(x=PC1, y=PC2, color = y)) +
+  geom_point(size=3)+
+  scale_color_gradient(low="blue", high ="red")+
+  labs(
+    title ="PCA Scores of Samples Colored by Anemia Risk",
+    x = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "% variance)"),
+    y = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "% variance)"),
+    color = "Anemia Risk"
+  )+
+  theme_minimal(base_size=14)
+
+ggsave("pca_plot.png", width = 6, height = 4, dpi = 300)
+
+```
+Participants positioned close together have similar combinations of diversity and iron features, while those farther apart differ more strongly across these variables. The first principal component (PC1), which explains about 79% of the variance, appears to separate participants with higher anemia risk (red) from those with lower risk (blue). 
+
 
 # Principal Component Regression (PCR)
+- Introduction of PCR
+```{r}
+dat_scaled <- data.frame(X_scaled, y)
+
+# run pcr with cross validation to see how many PCs to keep
+pcr_model <- pcr(y ~ ., data = dat_scaled, scale =TRUE, validation = "LOO")
+#print(summary(pcr_model))
+
+loadings <- loadings(pcr_model)
+print(loadings) 
+
+```
 
 Wishlist:
 
@@ -131,7 +225,7 @@ Wishlist:
 
 1. Intro. Talk abotut how PLS constructs latent variables that maximize covariance with **y**.
 2. It's **supervised from the start**: the response is used since the beginning, to build the components.
-3. At some point, `pls_model <- plsr(y ~ X1+X2+X3+X4, data = dat, scale = TRUE, validation = "LOO"); summary(pls_model)`
+3. At some point, `pls_model  <- plsr(y ~ X1+X2+X3+X4, data = dat, scale = TRUE, validation = "LOO"); summary(pls_model)`
 4. Show that PLS has loadings on the LVs as well
 5. `pls_loadings <- data.frame(pls_model$loading.weights[,1:2], var = rownames(pls_model$loading.weights))`
 6. Compare the PLS loadings to the PCA loadings (here is the money shot - you will show how the generated reduced dimensions are differente)
