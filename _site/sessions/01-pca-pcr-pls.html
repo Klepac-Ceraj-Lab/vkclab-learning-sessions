@@ -189,7 +189,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Aeka Tomita ’XX, Gahan Sabbir ’XX, Guilherme Fahur Bottino </p>
+             <p>Aeka Tomita ’26, Gahan Sabbir ’28, Guilherme Fahur Bottino </p>
           </div>
   </div>
     
@@ -226,25 +226,17 @@ We’ll explore three related but different approaches:</p>
 </section>
 <section id="preparing-the-environment" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Preparing the environment</h1>
-<p>This notebook depends on a few R packages for plotting and linear algebra operations. THe packages should have been installed during the initial rendering, but if not, <em>run this code (only once!) to install the dependencies.</em></p>
+<p>This notebook depends on a few R packages for plotting and linear algebra operations. The packages should have been installed during the initial rendering, but if not, <em>run this code (only once!) to install the dependencies.</em></p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show dependency codeblock</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN =</span> <span class="st">"https://cloud.r-project.org"</span>))</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"pls"</span>, <span class="st">"ggplot2"</span>, <span class="st">"gridExtra"</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>to_install <span class="ot">&lt;-</span> packages[<span class="sc">!</span>packages <span class="sc">%in%</span> <span class="fu">installed.packages</span>()[,<span class="st">"Package"</span>]]</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">length</span>(to_install)) <span class="fu">install.packages</span>(to_install)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-The downloaded binary packages are in
-    /var/folders/68/gkm0v30d0pl6b74b5qrpsx6w0000gn/T//RtmpjgxOXz/downloaded_packages</code></pre>
-</div>
-<details class="code-fold">
-<summary>Show dependency codeblock</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">lapply</span>(packages, <span class="cf">function</span>(pkg) {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">suppressPackageStartupMessages</span>(<span class="fu">library</span>(pkg, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">length</span>(to_install)) <span class="fu">install.packages</span>(to_install)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">lapply</span>(packages, <span class="cf">function</span>(pkg) {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">suppressPackageStartupMessages</span>(<span class="fu">library</span>(pkg, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -263,16 +255,16 @@ The downloaded binary packages are in
 </section>
 <section id="data" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Data</h1>
-<p>First, let’s assemble tha original data, as it would be utilized as a starting point:</p>
+<p>First, let’s assemble the original data, as it would be utilized as a starting point:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"MGX_Shannon_Index"</span>     <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="fl">0.5</span>, <span class="fl">2.2</span>, <span class="fl">1.9</span>, <span class="fl">3.1</span>, <span class="fl">2.3</span>, <span class="fl">2.0</span>, <span class="fl">1.0</span>),</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"MGX_InvSimpson_Index"</span>  <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">2.4</span>, <span class="fl">0.7</span>, <span class="fl">2.9</span>, <span class="fl">2.2</span>, <span class="fl">3.0</span>, <span class="fl">2.7</span>, <span class="fl">1.6</span>, <span class="fl">1.1</span>),</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"MBX_FreeIron"</span>          <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">1.5</span>, <span class="fl">0.3</span>, <span class="fl">0.8</span>, <span class="fl">0.4</span>, <span class="fl">0.7</span>, <span class="fl">1.2</span>, <span class="fl">1.3</span>),</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"MBX_Ferritin"</span>          <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">0.5</span>, <span class="fl">1.2</span>, <span class="fl">1.3</span>, <span class="fl">1.0</span>, <span class="fl">0.9</span>, <span class="fl">1.5</span>, <span class="fl">0.6</span>),</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"AnemiaRiskScore"</span>       <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">10.2</span>,<span class="fl">5.4</span>,<span class="fl">11.0</span>, <span class="fl">9.1</span>,<span class="fl">12.5</span>,<span class="fl">10.4</span>, <span class="fl">8.5</span>, <span class="fl">6.0</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>dat</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"MGX_Shannon_Index"</span>     <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="fl">0.5</span>, <span class="fl">2.2</span>, <span class="fl">1.9</span>, <span class="fl">3.1</span>, <span class="fl">2.3</span>, <span class="fl">2.0</span>, <span class="fl">1.0</span>),</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"MGX_InvSimpson_Index"</span>  <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">2.4</span>, <span class="fl">0.7</span>, <span class="fl">2.9</span>, <span class="fl">2.2</span>, <span class="fl">3.0</span>, <span class="fl">2.7</span>, <span class="fl">1.6</span>, <span class="fl">1.1</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"MBX_FreeIron"</span>          <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">1.5</span>, <span class="fl">0.3</span>, <span class="fl">0.8</span>, <span class="fl">0.4</span>, <span class="fl">0.7</span>, <span class="fl">1.2</span>, <span class="fl">1.3</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"MBX_Ferritin"</span>          <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">0.5</span>, <span class="fl">1.2</span>, <span class="fl">1.3</span>, <span class="fl">1.0</span>, <span class="fl">0.9</span>, <span class="fl">1.5</span>, <span class="fl">0.6</span>),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"AnemiaRiskScore"</span>       <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">10.2</span>,<span class="fl">5.4</span>,<span class="fl">11.0</span>, <span class="fl">9.1</span>,<span class="fl">12.5</span>,<span class="fl">10.4</span>, <span class="fl">8.5</span>, <span class="fl">6.0</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>dat</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  MGX_Shannon_Index MGX_InvSimpson_Index MBX_FreeIron MBX_Ferritin
 1               2.5                  2.4          0.5          1.0
@@ -309,27 +301,169 @@ Tip
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> dat[, <span class="fu">c</span>(<span class="st">"MGX_Shannon_Index"</span>, <span class="st">"MGX_InvSimpson_Index"</span>, <span class="st">"MBX_FreeIron"</span>, <span class="st">"MBX_Ferritin"</span>)]</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> dat[, <span class="st">"AnemiaRiskScore"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> dat[, <span class="fu">c</span>(<span class="st">"MGX_Shannon_Index"</span>, <span class="st">"MGX_InvSimpson_Index"</span>, <span class="st">"MBX_FreeIron"</span>, <span class="st">"MBX_Ferritin"</span>)]</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> dat[, <span class="st">"AnemiaRiskScore"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <hr>
 </section>
 <section id="principal-component-analysis-pca" class="level1" data-number="5">
 <h1 data-number="5"><span class="header-section-number">5</span> Principal Component Analysis (PCA)</h1>
-<p>Wishlist:</p>
-<ol type="1">
-<li>Small intro with or withut equations (use LaTeX-type notations)</li>
-<li>Methods to compute the Principal components</li>
-<li>SVD decomposition of the X matrix (remember to mean-center and scale)</li>
-<li>Explanation of each term in the SVD decomposition</li>
-<li>Scree plot with the varexpl by each prin. comp. (cumulative)</li>
-<li>Explanation of Loadings (Vt) and scatterplot Loadings of every variable on PC1 and PC2</li>
-<li>Explanation of Scores (U) and scatterplot of samples on PC1 vs PC2 <em>colored by the response (y)</em></li>
-<li>Compare the original matrix by the reconstruction created by using 1, 2, 3 and 4 pr. comps.</li>
-</ol>
+<p>PCA is a dimensionality reduction technique. It takes several correlated measurements (our four “X” columns) and rewrites them as a few new, uncorrelated “principal components” that capture most of the variation in the data.</p>
+<p>First, we must scale our input variables so that different units and spread of data are normalized:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X_scaled <span class="ot">&lt;-</span> <span class="fu">scale</span>(X)  </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Then perform PCA on these scaled variables:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>pca_result <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(X_scaled) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>We can see the result of the PCA has an atrribute, <strong>rotation</strong>. These are the loadings, which represent the weights of each original variable in the linear comination that forms a principal component.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>loadings <span class="ot">=</span> pca_result<span class="sc">$</span>rotation</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(loadings) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            PC1         PC2        PC3         PC4
+MGX_Shannon_Index    -0.5388198  0.05000978 -0.8143457 -0.20979364
+MGX_InvSimpson_Index -0.5448506  0.24048043  0.1731901  0.78441839
+MBX_FreeIron          0.5281104 -0.33195276 -0.5201181  0.58342429
+MBX_Ferritin         -0.3659378 -0.91075548  0.1905871 -0.01704493</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>scores <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(pca_result<span class="sc">$</span>x)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>scores<span class="sc">$</span>y <span class="ot">&lt;-</span> y</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>To visualize how much the total variance in the dataset is explained by each principal component, we can construct a <strong>Scree</strong> plot:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>var_explained <span class="ot">&lt;-</span> pca_result<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(pca_result<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>pca_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">PC =</span> <span class="fu">paste0</span>(<span class="st">"PC"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(var_explained)),</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Variance =</span> var_explained</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(pca_df, <span class="fu">aes</span>(<span class="at">x =</span> PC, <span class="at">y =</span> Variance, <span class="at">group =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"blue"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(Variance <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">1</span>), <span class="st">"%"</span>)),</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.8</span>, <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Scree Plot: Variance Explained by Each Principal Component"</span>,</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Principal Component"</span>,</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Proportion of Variance Explained"</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="01-pca-pcr-pls_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can construct a <strong>loadings</strong> plot in order to visualize the relationship between the input variables. Each point in the plot represents one of the original features, and its position indicates how strongly it contributes to the first two principal components. Variables that are close together have similar patterns across samples, while those that point in opposite directions are negatively correlated.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the first two principal component loadings</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>loadings <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(pca_result<span class="sc">$</span>rotation[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>loadings<span class="sc">$</span>Variable <span class="ot">&lt;-</span> <span class="fu">rownames</span>(pca_result<span class="sc">$</span>rotation)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(loadings, <span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2, <span class="at">label =</span> Variable)) <span class="sc">+</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">4</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">vjust =</span> <span class="sc">-</span><span class="fl">1.2</span>, <span class="at">size =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"gray"</span>) <span class="sc">+</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"gray"</span>) <span class="sc">+</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"PCA Loadings Plot"</span>,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">paste0</span>(<span class="st">"PC1 ("</span>, <span class="fu">round</span>(<span class="fu">summary</span>(pca_result)<span class="sc">$</span>importance[<span class="dv">2</span>,<span class="dv">1</span>]<span class="sc">*</span><span class="dv">100</span>, <span class="dv">1</span>), <span class="st">"% variance)"</span>),</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">paste0</span>(<span class="st">"PC2 ("</span>, <span class="fu">round</span>(<span class="fu">summary</span>(pca_result)<span class="sc">$</span>importance[<span class="dv">2</span>,<span class="dv">2</span>]<span class="sc">*</span><span class="dv">100</span>, <span class="dv">1</span>), <span class="st">"% variance)"</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="01-pca-pcr-pls_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="1056"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>In our dataset, the Shannon and Inverse Simpson indices cluster together, suggesting they capture similar information about microbiome diversity.</p>
+<p>The <strong>scores</strong> plot shows the PCA scores for each participant, where each point represents one pediatric participant’s profile based on their microbiome diversity and iron-related measurements. The color scale indicates the Anemia Risk Score, with warmer colors corresponding to higher risk.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(scores, <span class="fu">aes</span>(<span class="at">x=</span>PC1, <span class="at">y=</span>PC2, <span class="at">color =</span> y)) <span class="sc">+</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>)<span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_gradient</span>(<span class="at">low=</span><span class="st">"blue"</span>, <span class="at">high =</span><span class="st">"red"</span>)<span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span><span class="st">"PCA Scores of Samples Colored by Anemia Risk"</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">paste0</span>(<span class="st">"PC1 ("</span>, <span class="fu">round</span>(<span class="fu">summary</span>(pca_result)<span class="sc">$</span>importance[<span class="dv">2</span>,<span class="dv">1</span>]<span class="sc">*</span><span class="dv">100</span>, <span class="dv">1</span>), <span class="st">"% variance)"</span>),</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">paste0</span>(<span class="st">"PC2 ("</span>, <span class="fu">round</span>(<span class="fu">summary</span>(pca_result)<span class="sc">$</span>importance[<span class="dv">2</span>,<span class="dv">2</span>]<span class="sc">*</span><span class="dv">100</span>, <span class="dv">1</span>), <span class="st">"% variance)"</span>),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Anemia Risk"</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  )<span class="sc">+</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size=</span><span class="dv">14</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="01-pca-pcr-pls_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"pca_plot.png"</span>, <span class="at">width =</span> <span class="dv">6</span>, <span class="at">height =</span> <span class="dv">4</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Participants positioned close together have similar combinations of diversity and iron features, while those farther apart differ more strongly across these variables. The first principal component (PC1), which explains about 79% of the variance, appears to separate participants with higher anemia risk (red) from those with lower risk (blue).</p>
 </section>
 <section id="principal-component-regression-pcr" class="level1" data-number="6">
 <h1 data-number="6"><span class="header-section-number">6</span> Principal Component Regression (PCR)</h1>
+<ul>
+<li>Introduction of PCR</li>
+</ul>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat_scaled <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(X_scaled, y)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># run pcr with cross validation to see how many PCs to keep</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>pcr_model <span class="ot">&lt;-</span> <span class="fu">pcr</span>(y <span class="sc">~</span> ., <span class="at">data =</span> dat_scaled, <span class="at">scale =</span><span class="cn">TRUE</span>, <span class="at">validation =</span> <span class="st">"LOO"</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co">#print(summary(pcr_model))</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>loadings <span class="ot">&lt;-</span> <span class="fu">loadings</span>(pcr_model)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(loadings) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Loadings:
+                     Comp 1 Comp 2 Comp 3 Comp 4
+MGX_Shannon_Index    -0.539        -0.814 -0.210
+MGX_InvSimpson_Index -0.545  0.240  0.173  0.784
+MBX_FreeIron          0.528 -0.332 -0.520  0.583
+MBX_Ferritin         -0.366 -0.911  0.191       
+
+               Comp 1 Comp 2 Comp 3 Comp 4
+SS loadings      1.00   1.00   1.00   1.00
+Proportion Var   0.25   0.25   0.25   0.25
+Cumulative Var   0.25   0.50   0.75   1.00</code></pre>
+</div>
+</div>
 <p>Wishlist:</p>
 <ol type="1">
 <li>Small intro of PCR. PCR first computes PCs of <strong>X</strong>, then regresses <strong>y</strong> on those PCs.<br>
@@ -344,7 +478,7 @@ Tip
 <ol type="1">
 <li>Intro. Talk abotut how PLS constructs latent variables that maximize covariance with <strong>y</strong>.</li>
 <li>It’s <strong>supervised from the start</strong>: the response is used since the beginning, to build the components.</li>
-<li>At some point, <code>pls_model &lt;- plsr(y ~ X1+X2+X3+X4, data = dat, scale = TRUE, validation = "LOO"); summary(pls_model)</code></li>
+<li>At some point, <code>pls_model  &lt;- plsr(y ~ X1+X2+X3+X4, data = dat, scale = TRUE, validation = "LOO"); summary(pls_model)</code></li>
 <li>Show that PLS has loadings on the LVs as well</li>
 <li><code>pls_loadings &lt;- data.frame(pls_model$loading.weights[,1:2], var = rownames(pls_model$loading.weights))</code></li>
 <li>Compare the PLS loadings to the PCA loadings (here is the money shot - you will show how the generated reduced dimensions are differente)</li>
