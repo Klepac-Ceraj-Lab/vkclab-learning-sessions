@@ -43,7 +43,7 @@ _run this code (only once!) to install the dependencies._
 #| code-summary: "Show dependency codeblock"
 #| echo: true
 options(repos = c(CRAN = "https://cloud.r-project.org"))
-packages <- c("pls", "ggplot2", "gridExtra")
+packages <- c("pls", "ggplot2", "gridExtra", "ggpubr")
 to_install <- packages[!packages %in% installed.packages()[,"Package"]]
 if(length(to_install)) install.packages(to_install)
 invisible(lapply(packages, function(pkg) {
@@ -105,31 +105,46 @@ y <- dat[, "AnemiaRiskScore"]
 ---
 
 # Principal Component Analysis (PCA)
+__**What is PCA?**__
 
-PCA is a dimensionality reduction technique. It takes several correlated measurements (our four “X” columns) and rewrites them as a few new, uncorrelated “principal components” that capture most of the variation in the data.
+PCA is a dimensionality reduction technique. It takes several correlated measurements (*MGX_Shannon_Index, MGX_InvSimpson_Index, MBX_FreeIron,MBX_Ferritin*) and rewrites them as a few new, uncorrelated **Principal Components** (PCs) that capture most of the variation in the data. This helps simplify datasets while preserving the essential information, which is especially helpful in machine learning where we work with large datasets. 
 
-First, we must scale our input variables so that different units and spread of data are normalized: 
+__**How PCA works**__ (follow along with your R notebook!)
 
+To prepare our data for PCA, we have to **center** and **scale** the data matrix $X$ that contains all our measured features so that every feature has an equal weight. This prevents one variable from skewing the analysis.
 ```{r}
 X_scaled <- scale(X)  
 
 ```
-Then perform PCA on these scaled variables: 
+
+Once scaled, perform PCA: 
 ```{r}
 pca_result <- prcomp(X_scaled) 
 ```
+PCA uses **Singular Value Decomposition (SVD)** to break the data set into three parts. 
+ $$\tilde{X} = U \Sigma V^{\top}$$
 
-We can see the result of the PCA has an atrribute, **rotation**. These are the loadings, which represent the weights of each original variable in the linear comination that forms a principal component. 
-
+- Loadings: $V$ tells us how each original variable contributes to each principal component 
 ```{r}
 loadings = pca_result$rotation
 print(loadings) 
-
+```
+- Principal Component Scores: $U \Sigma$ tells us where each sample is located on the new axes 
+```{r}
 scores <- as.data.frame(pca_result$x)
 scores$y <- y
+print(scores)
 ```
+- Singular Values: $\Sigma$ are the standard deviations of the PCs and can get us the variance explained by each PC.
+```{r}
+singular_values <- pca_result$sdev
+print(singular_values)
+```
+SVD essentially rotates and re-scales the dataset and then from those calculations, we get our Principal Components!
 
-To visualize how much the total variance in the dataset is explained by each principal component, we can construct a **Scree** plot:
+**Visualizing Variance**
+
+To visualize how much the total variance in the dataset is explained by each principal component, we can construct a **Scree** plot by using the singular values.  
 ```{r}
 var_explained <- pca_result$sdev^2 / sum(pca_result$sdev^2)
 
@@ -151,8 +166,11 @@ ggplot(pca_df, aes(x = PC, y = Variance, group = 1)) +
   theme_minimal(base_size = 14)
 
 ```
+The first few bars usually capture most of the variance of our data. In our dataset, PC1 explains about 79% of the total variation, and PC2 adds another 17%. After that, the curve levels off, which means two components are enough to describe almost everything! 
 
-We can construct a **loadings** plot in order to visualize the relationship between the input variables. Each point in the plot represents one of the original features, and its position indicates how strongly it contributes to the first two principal components. Variables that are close together have similar patterns across samples, while those that point in opposite directions are negatively correlated. 
+**Visualizing Loadings**
+
+The loadings, $V$, which represent the weights of each original variable in the linear comination that forms a principal component can be used to construct a **loadings** plot. 
 
 ```{r}
 #| fig-width: 11
@@ -174,12 +192,13 @@ ggplot(loadings, aes(x = PC1, y = PC2, label = Variable)) +
   ) +
   theme_minimal(base_size = 14)
 ```
+This will help us visualize how the original features relate to the created Principal Components. Each point in the plot represents one of the original features, and its position indicates how strongly it contributes to the first two principal components. Variables that are close together have similar patterns across samples, while those that point in opposite directions are negatively correlated. 
 
-In our dataset, the Shannon and Inverse Simpson indices cluster together, suggesting they capture similar information about microbiome diversity. 
+In our dataset, the Shannon and Inverse Simpson points cluster together, suggesting they capture similar information about microbiome diversity. Whereas FreeIron is negatively correlated to those two points and Ferritin is on a separate axis than the three points. 
 
+**Visualizing PC Scores**
 
-
-The **scores** plot shows the PCA scores for each participant, where each point represents one pediatric participant’s profile based on their microbiome diversity and iron-related measurements. The color scale indicates the Anemia Risk Score, with warmer colors corresponding to higher risk. 
+We can also plot the Principal Component **scores** for each participant, where each point represents one pediatric participant’s profile based on their microbiome diversity and iron-related measurements. The color scale indicates the Anemia Risk Score, with warmer colors corresponding to higher risk. 
 
 ```{r}
 ggplot(scores, aes(x=PC1, y=PC2, color = y)) +
@@ -196,39 +215,244 @@ ggplot(scores, aes(x=PC1, y=PC2, color = y)) +
 ggsave("pca_plot.png", width = 6, height = 4, dpi = 300)
 
 ```
-Participants positioned close together have similar combinations of diversity and iron features, while those farther apart differ more strongly across these variables. The first principal component (PC1), which explains about 79% of the variance, appears to separate participants with higher anemia risk (red) from those with lower risk (blue). 
+Participants that are close together have similar profiles, while those far apart are more different. The first principal component (PC1), which explains about 79% of the variance, appears to separate participants with higher anemia risk (red) from those with lower risk (blue)!
+
+
+**Why is PCA useful?**
+With PCA, we were able to reduce our four correlated measurments(*MGX_Shannon_Index, MGX_InvSimpson_Index, MBX_FreeIron,MBX_Ferritin*), into just two components that capture nearly all of the information. This makes it much easier to visualize and interpret the relationships in the data and sets us up for sucess in PCR and PLS modeling! These will build on PCA to connect the two components to our outcome variable, *Anemia Risk Score*. 
 
 
 # Principal Component Regression (PCR)
-- Introduction of PCR
+
+__**What is PCR?**__
+
+
+  PCR is a combination of PCA and multiple linear regression. PCR is typically used alternatively to multiple linear regression when there are a lot of variables or variables are correlated (1 variable affects the other).
+
+
+  It reduces the dimensionality of a dataset by projecting it into a lower-dimensional subspace-- basically capturing the most important patterns and relationships in the data and only showing those.
+
+
+  PCR reduces dimensionality through principal components. These principal components (PCs) use singular value decomposition (SVD) of the covariance matrix to capture the most variance within the dataset. This ultimately summarizes the most important patterns and those PCs are used as the predictors within the regression model, instead of variables.
+
+
+   PCR first computes PCs of **X**, then regresses **y** on those PCs.  
+   It's a **supervised** step performed after the **unsupervised** PCA.
+
+
+__**How do we do it in R?**__
+First we need to build the PCR model:
 ```{r}
-dat_scaled <- data.frame(X_scaled, y)
+pcr_model <- pcr(y ~ ., data = dat, scale = TRUE, validation = "LOO") #use pls package's pcr function
+pred_vals <- predict(pcr_model) #get your predicted values
+predict_plot_df <- data.frame(Observed = y, Predicted = pred_vals[,1,1]) #make a new data frame with observed and predicted values
+```
 
-# run pcr with cross validation to see how many PCs to keep
-pcr_model <- pcr(y ~ ., data = dat_scaled, scale =TRUE, validation = "LOO")
-#print(summary(pcr_model))
 
-loadings <- loadings(pcr_model)
-print(loadings) 
+Using that, we then proceed to create a visualization of the regression in order to see how the anemia risk scores differ.
+```{r}
+predict_plot <- ggplot(predict_plot_df, aes(x = Observed, y = Predicted)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +  
+  theme_minimal() +
+  labs(
+    title = "Predicted vs Observed Anemia Risk Score",
+    x = "Observed Anemia Risk Score",
+    y = "Predicted Anemia Risk Score"
+  )
+predict_plot
+```
+
+
+In the above plot, we have the predicted data points on the y-axis and the observed points on the x-axis. This gives us a visualization of the differences between the two anemia risk scores and we can see which components of the data have the most variance.
+
+__**Why might we want to use principal component regression, or PCR?**__
+ Let’s backtrack a bit to explore what PCR even is. 
+
+ In our model, for example, we want to see how all of our variables are related to the Anemia risk. If we just had one variable, e.g. *MBX_Ferritin*, we would plot *MBX_Ferritin* on the x-axis, and the *Anemia* risk on the y-axis. We then draw a best-fit line through these points. Easy-peasy 2D graph! This is simple linear regression.
+Our final equation takes the form of: 
+$$y = c + b1x$$
+where $b$ is the slope of our best fit line.
+
+
+ 
+__**How do we do this when we have multiple variables though?**__
+
+We can use a technique called **multilinear regression**. Multilinear regression basically combines the simple linear regression for each of the variables performed separately. This means we plot *Anemia* risk against *MBX_Ferritin*, we plot Anemia risk against MBX_FreeIron, and so on for all of our variables. 
+
+Once we have the slopes of all our best fit lines, we have our multiple regression equation: 
+ $$y = c + b1x1+ b2x2 + b3x3 + b4x4 + …$$ 
+
+where the $x$’s are our variables and the $b$’s are our associated slopes. 
+This only really works if we know that there’s no relationship between each of our variables, though, and that’s really because of how we’re meant to interpret this regression. 
+
+When we look at each of the individual graphs for our multilinear regression– let’s say we want to see how ferritin levels affect anemia risk. We can assume that all of the other variables are being kept constant, allowing us to see how y changes if we ONLY change ferritin levels. 
+
+########################
+
+Let’s say we now want to see how free iron levels affect anemia risk. 
+
+Again, we assume all other variables remain constant. 
+
+Is that really accurate though? What if ferritin and free iron are correlated with each other? Let’s check: 
+
+```{r}
+FerritionIronCor <- cor(dat$MBX_Ferritin, dat$MBX_FreeIron)
+```
+We can see that ferritin and free iron are moderately negatively correlated to each other, with a correlation coefficient of approximately -0.4. This means that if keeping ferritin constant as we increase free iron wouldn’t really make sense, as in reality, ferritin levels decrease as we increase free iron, as displayed by our -0.4 correlation coefficient. 
+
+Ideally we want the variables that we compare our anemia risk to to be as independent as possible– meaning we want as little correlation between them as possible. Starting to sound familiar, maybe? 
+
+If you recall, we’ve actually already explored a tool for that– our principal components! Principal components summarize the relationships between our variables, and the best part about them is that we know that they’re all independent. We can thus compare each of our principal components to our anemia risk instead. Since our principal components are a ‘mixture’ of our variables like ferritin and free iron, they allow us to account for the relationship between ferritin and free iron. 
+
+What might this regression equation with a principal component, PC, look like? 
+$$y = c1 (PC)$$
+where $c1$ is the gradient of the line of best fit. 
+
+But… we don’t really want to see how anemia risk changes with the principal components. We still want to see how our anemia risk changes with our variables, we just want to account for the correlation between these variables. 
+
+Remember our loadings for the principal components? Just as a refresher– the loadings tell us what proportion of the principal component is made up by our different variables. 
+
+Let’s say ferritin is encoded by x1, and free iron by x2. Let’s assume for now that PC1 explains >90% of the relationship between ferritin and free iron, so including the other principal components wouldn’t make much difference. Let’s also assume for now that 
+$$PC1 = 0.45 x1 - 0.25 x2$$
+
+where 0.45 and -0.25 are the loadings for PC1. We know 
+$$y = c1 PC1$$
+We can substitute PC1 with our variables, now that we know the relationship between PC1 and our variables: 
+$$y = c1 (0.45 x1 - 0.25 x2)$$
+
+If we expand this out, we get: 
+$$y = (c1)(0.45) x1 + (c1)(-0.25) x2$$
+
+These adjusted coefficients allow us to technically keep one of the variables constant to evaluate the other one, as we have, in a way, using the principal component, made them independent. 
+
+**PCR Graph with ncomp = 1**
+
+```{r}
+predicted_y <- as.vector(predict(pcr_model, ncomp=1))
+results <- data.frame(
+  Observed = y,
+  Predicted = predicted_y
+)
+print(results)
+ggplot(results, aes(x = Observed, y = Predicted)) +
+  geom_point(size = 3, color = "blue") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray") +
+  labs(
+    title = "PCR of Observed vs Predicted Anemia Risk, ncomp = 1",
+    x = "Observed Anemia Risk Score",
+    y = "Predicted Anemia Risk Score"
+  ) +
+  theme_minimal(base_size = 14)
+
+```
+**PCR Graph with ncomp = 2**
+```{r}
+predicted_y_2 <- as.vector(predict(pcr_model, ncomp=2))
+results_2 <- data.frame(
+  Observed = y,
+  Predicted = predicted_y_2
+)
+print(results_2)
+ggplot(results_2, aes(x = Observed, y = Predicted)) +
+  geom_point(size = 3, color = "blue") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray") +
+  labs(
+    title = "PCR of Observed vs Predicted Anemia Risk, ncomp = 2",
+    x = "Observed Anemia Risk Score",
+    y = "Predicted Anemia Risk Score"
+  ) +
+  theme_minimal(base_size = 14)
 
 ```
 
-Wishlist:
-
-1. Small intro of PCR. PCR first computes PCs of **X**, then regresses **y** on those PCs.  
-2. It's a **supervised** step performed after the **unsupervised** PCA.
-3. At some point, `pcr_model <- pcr(y ~ X1+X2+X3+X4, data = dat, scale = TRUE, validation = "LOO"); summary(pcr_model)`
-
 # Partial Least Squares (PLS)
 
-Wishlist:
+**Why use PLS if PCR is a perfectly adequate tool?** 
 
-1. Intro. Talk abotut how PLS constructs latent variables that maximize covariance with **y**.
-2. It's **supervised from the start**: the response is used since the beginning, to build the components.
-3. At some point, `pls_model  <- plsr(y ~ X1+X2+X3+X4, data = dat, scale = TRUE, validation = "LOO"); summary(pls_model)`
-4. Show that PLS has loadings on the LVs as well
-5. `pls_loadings <- data.frame(pls_model$loading.weights[,1:2], var = rownames(pls_model$loading.weights))`
-6. Compare the PLS loadings to the PCA loadings (here is the money shot - you will show how the generated reduced dimensions are differente)
+We can see that in our previous equation, our PC1 loadings are such that ferritin gets 0.45 and free iron gets -0.25. These are the values that allow our PC1 line to explain most of the patterns seen when comparing our independent variables, or, to put it more succinctly, they’re the values that maximize our variance. Our coefficient for x is determined significantly by our PC loading, but these loadings don’t really take our anemia risk into account. 
+
+This is all to say that looking at our loadings of 0.45 for ferritin (x1) and -0.25 for free iron (x2), it appears as though ferritin is more important in our prediction of anemia risk than free iron is, when that’s not really the case. PLS, while very similar to PCR, takes into account our dependent variable, anemia risk. 
+
+Similar to how we explained ferritin and free iron together using a principal component, we’ll now encode ferritin and free iron together, not in a principal component, but as a latent variable. Let’s refer to this latent variable as LV1. Much like what we did with PCR, we can form a regression equation as follows: 
+y = c1 LV1
+
+**Building our PLS model**
+
+
+```{r}
+
+pls_model <- plsr(AnemiaRiskScore~MGX_Shannon_Index+MGX_InvSimpson_Index+MBX_FreeIron+MBX_Ferritin, data = dat, scale = TRUE, validation = "LOO"); summary(pls_model)
+predict_pls <- predict(pls_model, ncomp = 1)
+predict_pls_2 <- predict(pls_model, ncomp = 2)
+observed_pls <- y
+pls_plot_data <- as.data.frame(cbind(y, predict_pls))
+pls_plot_data_2 <- as.data.frame(cbind(y, predict_pls_2))
+colnames(pls_plot_data) <- c("Observed", "Predicted")
+colnames(pls_plot_data_2) <- c("Observed", "Predicted")
+
+```
+
+**PLS Graph with ncomp = 1**
+
+```{r}
+pls_model <- plsr(AnemiaRiskScore~MGX_Shannon_Index+MGX_InvSimpson_Index+MBX_FreeIron+MBX_Ferritin, data = dat, scale = TRUE, validation = "LOO"); summary(pls_model)
+summary(pls_model)
+predict_pls <- predict(pls_model, ncomp = 1)
+predict_pls_2 <- predict(pls_model, ncomp = 2)
+observed_pls <- y
+pls_plot_data <- as.data.frame(cbind(y, predict_pls))
+pls_plot_data_2 <- as.data.frame(cbind(y, predict_pls_2))
+colnames(pls_plot_data) <- c("Observed", "Predicted")
+colnames(pls_plot_data_2) <- c("Observed", "Predicted")
+#PLS prediction with ncomp = 1
+pls_graph_1 <- ggplot(pls_plot_data, aes(x=Observed, y=Predicted)) +
+geom_point(size = 3) +
+stat_cor(method = "pearson", label.x = 6, label.y = 4.4) +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  theme_minimal() +
+  labs(
+    title = "Predicted vs Observed Anemia Risk Score, ncomp = 1",
+    x = "Observed Anemia Risk Score",
+    y = "Predicted Anemia Risk Score"
+  )
+pls_graph_1
+ggsave("pls_graph_1.png", width = 6, height =4, dpi = 300)
+
+```
+
+
+_**PLS Graph with ncomp = 2**_
+```{r}
+#PLS prediction with ncomp = 2
+pls_graph_2 <- ggplot(pls_plot_data_2, aes(x=Observed, y=Predicted)) +
+geom_point(size = 3) +
+stat_cor(method = "pearson", label.x = 6, label.y = 4.4) +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  theme_minimal() +
+  labs(
+    title = "Predicted vs Observed Anemia Risk Score, ncomp = 2",
+    x = "Observed Anemia Risk Score",
+    y = "Predicted Anemia Risk Score"
+  )
+pls_graph_2
+ggsave("pls_graph_2.png", width = 6, height =4, dpi = 300)
+pls_loadings <- data.frame(pls_model$loading.weights[,1:2], var = rownames(pls_model$loading.weights))
+
+```
+
+**Comparison of PCR and PLS Loadings**
+```{r}
+pls_loadings <- data.frame(pls_model$loading.weights[,1:2], var = rownames(pls_model$loading.weights))
+
+pcr_loadings <- loadings(pcr_model)
+
+summary(pcr_loadings)
+summary(pls_loadings)
+```
+
+
+
 
 # Comparing predictions by PCR and PLS
 
@@ -236,7 +460,7 @@ Wishlist:
 
 **PLS → LVs ordered by covariance with y**
 
-```
+```{r}
 pcr_pred <- predict(pcr_model, ncomp = 1)
 pls_pred <- predict(pls_model, ncomp = 1)
 ## Idea: let's vary the number of `ncomp` and see if they converge!
@@ -262,10 +486,10 @@ p3
 
 | Aspect              | PCA / PCR     | PLS           |
 |---------------------|---------------|---------------|
-| Objective           |               |               |
-| Reduced Components  |               |               |
-| Uses **y**?         |               |               |
-| Use case + Advice   |               |               |
+| Objective           |  Find new, uncorrelated components that explain variation in X  |    Find new components that explain variation in X and have the strongest relationship with outcome y  |
+| Reduced Components  |   Principal Compoments     |    Latent Variables       |
+| Uses **y**?         |  PCA: no, PCR: yes, after doing PCA      |     yes        |
+| Use case + Advice   |       When x is highly correlated  ?  |   When you want to do prediction    |
 ---
 
 # Wrap-up
