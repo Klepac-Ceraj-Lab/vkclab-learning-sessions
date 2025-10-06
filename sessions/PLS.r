@@ -1,5 +1,9 @@
 install.packages("pls")
+install.packages("ggplot")
 library(pls)
+library(ggplot)
+install.packages("ggpubr")
+library(ggpubr)
 
 #| code-fold: true
 #| code-summary: "Show dependency codeblock"
@@ -27,5 +31,29 @@ dat
 X <- dat[, c("MGX_Shannon_Index", "MGX_InvSimpson_Index", "MBX_FreeIron", "MBX_Ferritin")]
 y <- dat[, "AnemiaRiskScore"]
 
-print(summary(dat))
+summary(X1)
 
+pls_model <- plsr(AnemiaRiskScore~MGX_Shannon_Index+MGX_InvSimpson_Index+MBX_FreeIron+MBX_Ferritin, data = dat, scale = TRUE, validation = "LOO"); summary(pls_model)
+summary(pls_model)
+predict_pls <- predict(pls_model, ncomp = pls_model$ncomp)
+observed_pls <- y
+pls_plot_data <- cbind(y, predict_pls)
+colnames(pls_plot_data) <- c("Observed", "Predicted")
+pls_plot_data <- as.data.frame(pls_plot_data)
+
+pls_graph <- ggplot(pls_plot_data, aes(x=Observed, y=Predicted)) + 
+geom_point(size = 3) +
+stat_cor(method = "pearson", label.x = 6, label.y = 4.4) +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  theme_minimal() +
+  labs(
+    title = "Predicted vs Observed Anemia Risk Score",
+    x = "Observed Anemia Risk Score",
+    y = "Predicted Anemia Risk Score"
+  )
+
+pls_graph
+
+ggsave("pls_graph.png", width = 6, height =4, dpi = 300)
+
+pls_loadings <- data.frame(pls_model$loading.weights[,1:2], var = rownames(pls_model$loading.weights))
